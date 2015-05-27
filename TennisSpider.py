@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-#Добавить пол, табличные данные игрока на тот момент
-#
-
 import grab
 from grab.spider import Spider, Task
 
@@ -13,7 +10,6 @@ class TennisLiveSpider(Spider):
 		'''
 		'''
 		self.base_url = self.initial_urls[0]
-
 		yield Task('atp_tournament_list', url='http://www.tennislive.net/atp-men')
 		yield Task('wta_tournament_list', url='http://www.tennislive.net/wta-women')
 	def task_atp_tournament_list(self, grab, task):
@@ -58,21 +54,21 @@ class TennisLiveSpider(Spider):
 		'''
 		'''
 		xpath = '//table[@class="table_stats_match"]/tr/td'
+		xpath = '//div[@class="player_matches"]/table/tr/td' #данные о матче - дата, раунд, имена, счет
+		f = open("results.txt", 'a')
+		i = 0
+		for elem in grab.doc.select(xpath):
+			if i == 0:
+				f.write(elem.text())
+				i += 1
+			elif i == 6:
+				f.write(' ' + ',' + ' ' + '"' + elem.text() + '"')
+				break
+			else:
+				f.write(' ' + ',' +  ' ' + '"' + elem.text() + '"')
+				i += 1
+		xpath = '//table[@class="table_stats_match"]/tr/td'
 		if len(grab.doc.select(xpath)) != 0:
-			xpath = '//div[@class="player_matches"]/table/tr/td' #данные о матче - дата, раунд, имена, счет
-			f = open("results.txt", 'a')
-			i = 0
-			for elem in grab.doc.select(xpath):
-				if i == 0:
-					f.write(elem.text())
-					i += 1
-				elif i == 6:
-					f.write(' ' + ',' + ' ' + '"' + elem.text() + '"')
-					break
-				else:
-					f.write(' ' + ',' +  ' ' + '"' + elem.text() + '"')
-					i += 1
-			xpath = '//table[@class="table_stats_match"]/tr/td'
 			i = 0
 			flag = True
 			for elem in grab.doc.select(xpath):
@@ -88,19 +84,18 @@ class TennisLiveSpider(Spider):
 						i += 1
 					else:
 						i += 1
-			xpath = '//div[@class="player_comp_info_left"]'
-			for elem in grab.doc.select(xpath):
-				#a = elem.text().split()
-				#for e in a:
-				f.write(' ' + ','  +  ' ' + '"' + elem.text() + '"')
-			xpath = '//div[@class="player_comp_info_right"]'
-			for elem in grab.doc.select(xpath):
-				#a = elem.text().split()
-				#for e in a:
-				f.write(' ' + ','  +  ' ' + '"' + elem.text() + '"')
-			f.write('\n')
-			f.write('\n')
-			f.close()
+		else:
+			for i in range(16):
+				f.write(' ' + ',' +  ' ')
+		xpath = '//div[@class="player_comp_info_left"]'
+		for elem in grab.doc.select(xpath):
+			f.write(' ' + ','  +  ' ' + '"' + elem.text() + '"')
+		xpath = '//div[@class="player_comp_info_right"]'
+		for elem in grab.doc.select(xpath):
+			f.write(' ' + ','  +  ' ' + '"' + elem.text() + '"')
+		f.write('\n')
+		f.write('\n')
+		f.close()
 
 def main():
     spider = TennisLiveSpider(thread_number=2)
