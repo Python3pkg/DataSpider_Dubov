@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import grab
+import csv
 from grab.spider import Spider, Task
 
 class TennisLiveSpider(Spider):
@@ -53,19 +54,21 @@ class TennisLiveSpider(Spider):
 	def task_get_stats(self, grab, task):
 		'''
 		'''
+		string = []
 		xpath = '//table[@class="table_stats_match"]/tr/td'
 		xpath = '//div[@class="player_matches"]/table/tr/td' #данные о матче - дата, раунд, имена, счет
-		f = open("results.txt", 'a')
+		res = open('results.csv', 'a')
+		writer = csv.writer(res)
 		i = 0
 		for elem in grab.doc.select(xpath):
 			if i == 0:
-				f.write(elem.text())
+				string.append(str(elem.text()))
 				i += 1
 			elif i == 6:
-				f.write(' ' + ',' + ' ' + '"' + elem.text() + '"')
+				string.append(str(elem.text()))
 				break
 			else:
-				f.write(' ' + ',' +  ' ' + '"' + elem.text() + '"')
+				string.append(str(elem.text()))
 				i += 1
 		xpath = '//table[@class="table_stats_match"]/tr/td'
 		if len(grab.doc.select(xpath)) != 0:
@@ -80,22 +83,21 @@ class TennisLiveSpider(Spider):
 						i += 1
 				else:
 					if i % 3 != 0:
-						f.write(' ' + ','  +  ' ' + elem.text())
+						string.append(str(elem.text()))
 						i += 1
 					else:
 						i += 1
 		else:
 			for i in range(16):
-				f.write(' ' + ',' +  ' ')
+				string.append("")
 		xpath = '//div[@class="player_comp_info_left"]'
 		for elem in grab.doc.select(xpath):
-			f.write(' ' + ','  +  ' ' + '"' + elem.text() + '"')
+			string.append(str(elem.text()))
 		xpath = '//div[@class="player_comp_info_right"]'
 		for elem in grab.doc.select(xpath):
-			f.write(' ' + ','  +  ' ' + '"' + elem.text() + '"')
-		f.write('\n')
-		f.write('\n')
-		f.close()
+			string.append(str(elem.text()))
+		writer.writerow(string)
+		res.close()
 
 def main():
     spider = TennisLiveSpider(thread_number=2)
