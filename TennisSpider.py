@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+#Добавить пол, табличные данные игрока на тот момент
+#
+
 import grab
 from grab.spider import Spider, Task
 
@@ -16,7 +19,6 @@ class TennisLiveSpider(Spider):
 	def task_atp_tournament_list(self, grab, task):
 		'''
 		'''
-		print('atp_tournament_list')
 		xpath = "//div[@class='tour_box']/ul/li[@class='menu_main']/a"
 		for tournament in grab.doc.select(xpath):
 			tournament_url = tournament.attr('href')
@@ -26,7 +28,6 @@ class TennisLiveSpider(Spider):
 	def task_wta_tournament_list(self, grab, task):
 		'''
 		'''
-		print('wta_tournament_list')
 		xpath = "//div[@class='tour_box']/ul/li[@class='menu_main']/a"
 		for tournament in grab.doc.select(xpath):
 			tournament_url = tournament.attr('href')
@@ -37,7 +38,6 @@ class TennisLiveSpider(Spider):
 	def task_tournament_info(self, grab, task):
 		'''
 		'''
-		print('tournament_info')
 		xpath ='//ul[@id = "topmenu_full"]/li/a'
 		for elem in grab.doc.select(xpath):
 			if elem.text() == 'Finished':
@@ -47,7 +47,6 @@ class TennisLiveSpider(Spider):
 	def task_get_pairs(self, grab, task):
 		'''
 		'''
-		print('get_pairs')
 		xpath = '//tr[@class="pair" or @class="unpair"]/td[@class!="beg"] | tr[@class="pair" or @class="unpair"]/td[@class="detail"]/div[@class="head2head"]'
 		for elem in grab.doc.select(xpath):
 			if elem.attr('class') == "head2head":
@@ -58,45 +57,50 @@ class TennisLiveSpider(Spider):
 	def task_get_stats(self, grab, task):
 		'''
 		'''
-		print('get_stats')
-		xpath = '//div[@class="player_matches"]/table/tr/td' #данные о матче - дата, раунд, имена, счет
-		f = open("new_results.txt", 'a')
-		i = 0
-		winner = ''
-		for elem in grab.doc.select(xpath):
-			print(elem.text())
-			if i == 0:
-				f.write(elem.text())
-				i += 1
-			elif i == 4:
-				f.write(' ' + ',' +  ' ' + '"' + elem.text() + '"')
-				i += 1
-			elif i == 6:
-				f.write(' ' + ',' + ' ' + '"' + elem.text() + '"')
-				break
-			else:
-				f.write(' ' + ',' +  ' ' + '"' + elem.text() + '"')
-				i += 1
 		xpath = '//table[@class="table_stats_match"]/tr/td'
-		i = 0
-		flag = True
-		for elem in grab.doc.select(xpath):
-			print(elem.text())
-			if flag:
-				if i % 3 == 2:
-					flag = False
+		if len(grab.doc.select(xpath)) != 0:
+			xpath = '//div[@class="player_matches"]/table/tr/td' #данные о матче - дата, раунд, имена, счет
+			f = open("results.txt", 'a')
+			i = 0
+			for elem in grab.doc.select(xpath):
+				if i == 0:
+					f.write(elem.text())
 					i += 1
+				elif i == 6:
+					f.write(' ' + ',' + ' ' + '"' + elem.text() + '"')
+					break
 				else:
+					f.write(' ' + ',' +  ' ' + '"' + elem.text() + '"')
 					i += 1
-			else:
-				if i % 3 != 0:
-					f.write(' ' + ','  +  ' ' + '"' + elem.text() + '"')
-					i += 1
+			xpath = '//table[@class="table_stats_match"]/tr/td'
+			i = 0
+			flag = True
+			for elem in grab.doc.select(xpath):
+				if flag:
+					if i % 3 == 2:
+						flag = False
+						i += 1
+					else:
+						i += 1
 				else:
-					i += 1
-		f.write('\n')
-		f.close()
-
+					if i % 3 != 0:
+						f.write(' ' + ','  +  ' ' + elem.text())
+						i += 1
+					else:
+						i += 1
+			xpath = '//div[@class="player_comp_info_left"]'
+			for elem in grab.doc.select(xpath):
+				#a = elem.text().split()
+				#for e in a:
+				f.write(' ' + ','  +  ' ' + '"' + elem.text() + '"')
+			xpath = '//div[@class="player_comp_info_right"]'
+			for elem in grab.doc.select(xpath):
+				#a = elem.text().split()
+				#for e in a:
+				f.write(' ' + ','  +  ' ' + '"' + elem.text() + '"')
+			f.write('\n')
+			f.write('\n')
+			f.close()
 
 def main():
     spider = TennisLiveSpider(thread_number=2)
