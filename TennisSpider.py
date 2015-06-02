@@ -11,7 +11,7 @@ from grab.spider import Spider, Task
 #Cделать вывод stdout stderr
 #сделать парсинг сайта рейтингов, добавить утилиту для вывода расписания матчей
 #Настроить cron
-#Допилить парсинг
+#Допилить парсинг - разобраться с парсингом пар
 # --out 'name.csv'
 
 parser = argparse.ArgumentParser()
@@ -142,27 +142,43 @@ class TennisSpider(Spider):
 			compare = []
 			xpath = '//div[@class="player_comp_desc"]/text()'
 			for elem in grab.doc.select(xpath):
-				compare.append([elem.text(), '-', '-'])
+				compare.append(elem.text())
 			xpath = '//div[@class="player_comp_info_left"]/text()'
 			k = 0
+			flag = True
 			for elem in grab.doc.select(xpath):
-				if elem.text() == "":
-					compare[k][1] = "-"
+				if compare[k] != "Ranking's position":
+					if flag:
+						if elem.text() == '':
+							row[23 + dic[compare[k]]] = '-'
+							k += 1
+						else:
+							row[23 + dic[compare[k]]] = elem.text()
+							k += 1
+					else:
+						flag = True
 				else:
-					compare[k][1] = elem.text()
+					row[23 + dic[compare[k]]] = elem.text()
 					k += 1
+					flag = False
 			xpath = '//div[@class="player_comp_info_right"]/text()'
 			k = 0
+			flag = True
 			for elem in grab.doc.select(xpath):
-				if elem.text() == "":
-					compare[k][2] = "-"
+				if compare[k] != "Ranking's position":
+					if flag:
+						if elem.text() == '':
+							row[32 + dic[compare[k]]] = '-'
+							k += 1
+						else:
+							row[32 + dic[compare[k]]] = elem.text()
+							k += 1
+					else:
+						flag = True
 				else:
-					compare[k][2] = elem.text()
+					row[32 + dic[compare[k]]] = elem.text()
 					k += 1
-			for elem in compare:
-				if elem[0] != "":
-					row[23 + dic[elem[0]]*2 - 1] = elem[1]
-					row[23 + dic[elem[0]]*2 ] = elem[2]
+					flag = False
 			writer.writerow(row)
 			res.close()
 		else:
