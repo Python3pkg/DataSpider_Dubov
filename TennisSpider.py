@@ -6,7 +6,7 @@ import os
 import csv
 import argparse
 from grab.spider import Spider, Task
-
+from grab import GrabMisuseError
 #TODO:
 #Cделать вывод stdout stderr
 #сделать парсинг сайта рейтингов, добавить утилиту для вывода расписания матчей
@@ -97,9 +97,12 @@ class TennisSpider(Spider):
 			else:
 				row.append(str(elem.text()))
 				i += 1
+
 		xpath = '//table[@class="table_stats_match"]/tr/td'
+
 		for j in range(16):
 				row.append("-")
+
 		dic = {'1st SERVE %' : 1,
 				'1st SERVE POINTS WON' : 2,
 				'2nd SERVE POINTS WON' : 3,
@@ -109,6 +112,7 @@ class TennisSpider(Spider):
 				'DOUBLE FAULTS' : 7,
 				'ACES' : 8,
 				}
+
 		i = 0
 		stat = ''
 		flag = True
@@ -126,8 +130,10 @@ class TennisSpider(Spider):
 				else:
 					stat = elem.text()
 					i += 1
-		for j in range(18):
+
+		for j in range(36):
 			row.append("-")
+
 		dic = {'Country' : 1,
 				'Birthdate' : 2,
 				'Height' : 3,
@@ -138,55 +144,135 @@ class TennisSpider(Spider):
 				'Points' : 8,
 				'Prize money' : 9,
 				}
+
 		if "/" not in row[3]:
-			compare = []
-			xpath = '//div[@class="player_comp_desc"]/text()'
+			last = 0
+			position = ''
+			xpath = '//div[@class="player_comp_info_left"]/a'
 			for elem in grab.doc.select(xpath):
-				compare.append(elem.text())
-			xpath = '//div[@class="player_comp_info_left"]/text()'
-			k = 0
-			flag = True
+				position = elem.text()
+			xpath = '//div[@class="player_comp_info_left"]/text() | //div[@class="player_comp_info_left"]/a'
 			for elem in grab.doc.select(xpath):
-				if compare[k] != "Ranking's position":
-					if flag:
-						if elem.text() == '':
-							row[23 + dic[compare[k]]] = '-'
-							k += 1
-						else:
-							row[23 + dic[compare[k]]] = elem.text()
-							k += 1
-					else:
-						flag = True
+				if not last:
+					row[23 + dic['Country']] = elem.text()
+					last = dic['Country']
+				elif 'years' in elem.text():
+					row[23 + dic['Birthdate']] = elem.text()
+					last = dic['Birthdate']
+				elif 'cm' in elem.text():
+					row[23 + dic['Height']] = elem.text()
+					last = dic['Height']
+				elif 'kg' in elem.text():
+					row[23 + dic['Weight']] = elem.text()
+					last = dic['Weight']
+				elif 'handed' in elem.text():
+					row[23 + dic['Play']] = elem.text()
+					last = dic['Play']
+				elif '$' in elem.text():
+					row[23 + dic['Prize money']] = elem.text()
+					last = dic['Prize money']
 				else:
-					row[23 + dic[compare[k]]] = elem.text()
-					k += 1
-					flag = False
-			xpath = '//div[@class="player_comp_info_right"]/text()'
-			k = 0
-			flag = True
+					try:
+						int(elem.text())
+						if elem.text() != position and last != 7:
+							row[23 + dic['Profi since']] = elem.text()
+							last = dic['Profi since']
+						elif elem.text() == position:
+							row[23 + dic["Ranking's position"]] = elem.text()
+							last = dic["Ranking's position"]
+						elif last == 7:
+							row[23 + dic['Points']] = elem.text()
+							last = dic['Points']
+					except ValueError:
+						pass
+
+			last = 0
+			position = ''
+			xpath = '//div[@class="player_comp_info_right"]/a'
 			for elem in grab.doc.select(xpath):
-				if compare[k] != "Ranking's position":
-					if flag:
-						if elem.text() == '':
-							row[32 + dic[compare[k]]] = '-'
-							k += 1
-						else:
-							row[32 + dic[compare[k]]] = elem.text()
-							k += 1
-					else:
-						flag = True
+				position = elem.text()
+			xpath = '//div[@class="player_comp_info_right"]/text() | //div[@class="player_comp_info_right"]/a'
+			for elem in grab.doc.select(xpath):
+				if not last:
+					row[32 + dic['Country']] = elem.text()
+					last = dic['Country']
+				elif 'years' in elem.text():
+					row[32 + dic['Birthdate']] = elem.text()
+					last = dic['Birthdate']
+				elif 'cm' in elem.text():
+					row[32 + dic['Height']] = elem.text()
+					last = dic['Height']
+				elif 'kg' in elem.text():
+					row[32 + dic['Weight']] = elem.text()
+					last = dic['Weight']
+				elif 'handed' in elem.text():
+					row[32 + dic['Play']] = elem.text()
+					last = dic['Play']
+				elif '$' in elem.text():
+					row[32 + dic['Prize money']] = elem.text()
+					last = dic['Prize money']
 				else:
-					row[32 + dic[compare[k]]] = elem.text()
-					k += 1
-					flag = False
+					try:
+						int(elem.text())
+						if elem.text() != position and last != 7:
+							row[32 + dic['Profi since']] = elem.text()
+							last = dic['Profi since']
+						elif elem.text() == position:
+							row[32 + dic["Ranking's position"]] = elem.text()
+							last = dic["Ranking's position"]
+						elif last == 7:
+							row[32 + dic['Points']] = elem.text()
+							last = dic['Points']
+					except ValueError:
+						pass
 			writer.writerow(row)
 			res.close()
 		else:
-			#for j in range(18):
-			#	row.append("-")
-			#xpath = '//div[@class="player_comp_desc"]/text()'
-			#for elem in grab.doc.select(xpath):
-			#	compare.append([elem.text(), '-', '-'])
+			xpath = '//div[@class="player_comp_info_left"]/text()'
+			num = 0
+			flag = True
+			for elem in grab.doc.select(xpath):
+				if flag:
+					row[23 + dic['Country']] = elem.text()
+					flag = False
+				else:
+					if 'years' in elem.text():
+						row[23 + 9 * num + dic['Birthdate']] = elem.text()
+					elif 'cm' in elem.text():
+						row[23 + 9 * num + dic['Height']] = elem.text()
+					elif 'kg' in elem.text():
+						row[23 + 9 * num + dic['Weight']] = elem.text()
+					elif 'handed' in elem.text():
+						row[23 + 9 * num + dic['Play']] = elem.text()
+					else:
+						if elem.text().isnumeric():
+							row[23 + 9 * num + dic['Profi since']] = elem.text()											
+						elif elem.text() != '':
+							row[32 + dic['Country']] = elem.text()
+							num += 1
+
+			xpath = '//div[@class="player_comp_info_right"]/text()'
+			num = 0
+			flag = True
+			for elem in grab.doc.select(xpath):
+				if flag:
+					row[41 + dic['Country']] = elem.text()
+					flag = False
+				else:
+					if 'years' in elem.text():
+						row[41 + 9 * num + dic['Birthdate']] = elem.text()
+					elif 'cm' in elem.text():
+						row[41 + 9 * num + dic['Height']] = elem.text()
+					elif 'kg' in elem.text():
+						row[41 + 9 * num + dic['Weight']] = elem.text()
+					elif 'handed' in elem.text():
+						row[41 + 9 * num + dic['Play']] = elem.text()
+					else:
+						if elem.text().isnumeric():
+							row[41 + 9 * num + dic['Profi since']] = elem.text()											
+						elif elem.text() != '':
+							row[50 + dic['Country']] = elem.text()
+							num += 1
 			writer.writerow(row)
 			res.close()
 
