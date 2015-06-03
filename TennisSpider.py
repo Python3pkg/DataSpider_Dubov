@@ -4,19 +4,22 @@
 import grab
 import os
 import csv
+import sys
 import argparse
 from grab.spider import Spider, Task
 from grab import GrabMisuseError
 #TODO:
 #Cделать вывод stdout stderr
 #сделать парсинг сайта рейтингов, добавить утилиту для вывода расписания матчей
-#Настроить cron
-#Допилить парсинг - разобраться с парсингом пар
 # --out 'name.csv'
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-u", type=str, default='r', help="r - for results ,s - for schedule, g - for getting ranks")
+parser.add_argument("-u", type=str, default='f', help="f - for finished results ,s - for schedule, r - for getting ranks")
+parser.add_argument("-c", type=str, default='m', help="m - for male, f - for female")
+parser.add_argument("-t", type=str, default='l', help="l - for live rating, o - for oficcial")
 args = parser.parse_args()
+
+
 
 class TennisSpider(Spider):
 	initial_urls = ['http://www.tennislive.net/', ]
@@ -25,13 +28,11 @@ class TennisSpider(Spider):
 		'''
 		self.base_url = self.initial_urls[0]
 		#try args.u == 's'
-		if args.u == 'r':
+		if args.u == 'f':
 			yield Task('atp_tournament_list', url='http://www.tennislive.net/atp-men')
 			yield Task('wta_tournament_list', url='http://www.tennislive.net/wta-women')
-		elif args.c == 'r':
-			yield Task('ranks', url='http://ranks.com')
-		else:
-			pass
+		elif args.u == 's':
+			yield Task('schedule', url=task.url)
 			#throw exception
 
 	def task_atp_tournament_list(self, grab, task):
@@ -55,6 +56,16 @@ class TennisSpider(Spider):
 			if tournament_name != "ATP ranking" and tournament_name != "WTA ranking" and tournament_name != "ALL TOURNAMENTS":
 				yield Task('tournament_info', tournament_url, tournament_name=tournament_name, civility=civility)	
 
+	def task_schedule(self, grab, task):
+		'''
+		'''
+		xpath = '//div[@class = "full"]/ul/li/a'
+		for elem in grab.doc.select(xpath):
+			if elem.text() == "Scheduled":
+				new_url = elem.attr('href')
+				sys.stdout.write("Schedule:")
+				yield Task('get_pairs', new_url)
+
 	def task_tournament_info(self, grab, task):
 		'''
 		'''
@@ -72,7 +83,38 @@ class TennisSpider(Spider):
 			if elem.attr('class') == "head2head":
 				el = elem.select('a')
 				stats_url = el.attr('href')
-				yield Task('get_stats', stats_url, civility=task.civility)
+				if args.u == 's':
+					yield Task('get_info', stats_url)
+				else:
+					yield Task('get_stats', stats_url, civility=task.civility)
+
+	def task_get_info(self, grab, task):
+		'''
+		'''
+		xpath = '//div[@class="player_matches"]/table/tr/td'
+		i = 0
+		match = []
+		for elem in grab.doc.select(xpath):
+			if i == 0:
+				if elem.text() != '':
+					match.append(str(elem.text()))
+				i += 1
+			elif i == 2:
+				if elem.text() != '':
+					match.append(str(elem.text()))
+				i += 1
+			elif i == 6:
+				if elem.text() != '':
+					match.append(str(elem.text()))
+				break
+			else:
+				if elem.text() != '':
+					match.append(str(elem.text()))
+				i += 1
+		for elem in match:
+			if elem != 'no matches found':
+				sys.stdout.write(elem + ', ')
+		sys.stdout.write('\n')
 
 	def task_get_stats(self, grab, task):
 		'''
@@ -276,9 +318,62 @@ class TennisSpider(Spider):
 			writer.writerow(row)
 			res.close()
 
+class RanksSpider(Spider):
+	initial_urls = ['http://live-tennis.eu/']
+	def task_initial(self, grab, task):
+		'''
+		'''
+		filename = os.getenv('FILENAME')
+		self.base_url = self.initial_urls[0]
+		if args.c == 'm':
+			if args.t == 'l':
+				yield Task('get_ranks', url='http://live-tennis.eu/')
+			elif args[1] == 'o':
+				yield Task('get_ranks', url='http://live-tennis.eu/official_atp_ranking')
+		elif args.c == 'f':
+			if args.t == 'l':
+				yield Task('get_ranks', url='http://live-tennis.eu/wta-live-ranking')
+			elif args.t == 'o':
+				yield Task('get_ranks', url='http://live-tennis.eu/official-wta-ranking')
+
+	def task_get_ranks(self, grab, task):
+		'''
+		'''
+		filename = os.getenv('FILENAME')
+		xpath = '//tr/td'
+		res = open('%s' %(filename), 'a')
+		writer = csv.writer(res)
+		row = []
+		flag = False
+		for elem in grab.doc.select(xpath):
+			if not flag:
+				if elem.text() == '1':
+					j = 1
+					row.append(elem.text())
+					flag = True
+			else:
+				if j < 5500:
+					if j % 11 == 10:
+						row.append(elem.text())
+						row.append(time.ctime())
+						writer.writerow(row)
+						row = []
+						j += 1
+
+					else:
+						row.append(elem.text())
+						j += 1
+				else:
+					break
+			
+		res.close()
 
 def main():
-	spider = TennisSpider(thread_number=2)
-	spider.run()
+	if args.u == 'f' or args.u == 's':
+		spider = TennisSpider(thread_number=2)
+		spider.run()
+	elif args.u == 'r':
+		spider = RanksSpider(thread_number=2)
+		spider.run()
 
 main()
