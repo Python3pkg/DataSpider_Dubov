@@ -21,11 +21,17 @@ class RanksSpider(Spider):
 				yield Task('get_ranks', url='http://live-tennis.eu/')
 			elif self.args.t == 'o':
 				yield Task('get_ranks', url='http://live-tennis.eu/official_atp_ranking')
+			else:
+				sys.stderr.write('Unvalid input of utility -t\n')
 		elif self.args.c == 'f':
 			if self.args.t == 'l':
 				yield Task('get_ranks', url='http://live-tennis.eu/wta-live-ranking')
 			elif self.args.t == 'o':
 				yield Task('get_ranks', url='http://live-tennis.eu/official-wta-ranking')
+			else:
+				sys.stderr.write('Unvalid input of utility -t\n')
+		else:
+			sys.stderr.write('Unvalid input of utility -c\n')
 
 	def task_get_ranks(self, grab, task):
 		'''

@@ -27,5 +27,7 @@ def main():
 	elif args.u == 'r':
 		spider = RanksSpider(thread_number=2, args=args)
 		spider.run()
+	else:
+		sys.stderr.write('Unvalid input of utility -u\n')
 
 main()
