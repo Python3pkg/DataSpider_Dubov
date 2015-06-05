@@ -1,5 +1,5 @@
 # DataSpider_Dubov
-The utility for parcing information about finished matches in live tennis tournaments, ranks, and schedule. 
+The utility for parcing information about finished matches in live tennis tournaments, ranks, and schedule.
 ##Preparing for using
 ###Python Installation
 install python3: https://www.python.org/downloads/
@@ -10,7 +10,7 @@ In utility there are 4 files: main.py, Class_RankSpider.py, Class_ResultsSpider.
 
 By using utility you can select three names of option -u: f - for finished results, r - for ranks, s - for schedule.
 
-If you select f or r, you need to indicate the name of file (in format csv) you will save the information to with the option of command line FILNAME.
+If you select f or r, you need to indicate the name of file (in format csv) you will save the information to with the option of command line FILENAME.
 
 So for parsing results your command will look like:
 
