@@ -2,7 +2,7 @@
 The utility for parcing information about finished matches in live tennis tournaments, ranks, and schedule. 
 ##Preparing for using
 ###Python Installation
-install python: https://www.python.org/downloads/
+install python3: https://www.python.org/downloads/
 ###Grab Installation
 install python module Grab: http://docs.grablib.org/en/latest/usage/installation.html
 ##Use of utility
