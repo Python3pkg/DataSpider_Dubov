@@ -10,7 +10,6 @@ from grab.spider import Spider, Task
 from grab import GrabMisuseError
 #TODO:
 #Cделать вывод stdout stderr
-#сделать парсинг сайта рейтингов, добавить утилиту для вывода расписания матчей
 # --out 'name.csv'
 
 parser = argparse.ArgumentParser()

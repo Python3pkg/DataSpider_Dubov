@@ -14,7 +14,6 @@ class RanksSpider(Spider):
 	def task_initial(self, grab, task):
 		'''
 		'''
-		filename = os.getenv('FILENAME')
 		self.base_url = self.initial_urls[0]
 		if self.args.c == 'm':
 			if self.args.t == 'l':

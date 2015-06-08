@@ -14,7 +14,7 @@ from grab.spider import Spider, Task
 parser = argparse.ArgumentParser()
 parser.add_argument("-u", type=str, default='f', help="f - for finished results ,s - for schedule, r - for getting ranks")
 parser.add_argument("-c", type=str, default='m', help="m - for male, f - for female")
-parser.add_argument("-t", type=str, default='l', help="l - for live rating, o - for oficcial")
+parser.add_argument("-t", type=str, default='l', help="l - for live rating, o - for official")
 args = parser.parse_args()
 
 def main():
