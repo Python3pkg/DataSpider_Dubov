@@ -18,8 +18,8 @@ class ResultsSpider(Spider):
 		'''
 		self.base_url = self.initial_urls[0]
 		data = ''
-		if os.getenv('DATA') != None
-			data = os.getenv('DATA')			
+		if os.getenv('DATA') != None:
+			data = os.getenv('DATA')
 		atp_url = ('http://www.tennislive.net/atp-men/{}'.format(data))
 		wta_url = ('http://www.tennislive.net/wta-women/{}'.format(data))
 		print(men_url)

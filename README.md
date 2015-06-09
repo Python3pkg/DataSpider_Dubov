@@ -25,10 +25,10 @@ So for parsing e.g. live female ranks your command will look like:
 $ FILENAME=wta_live_ranks.csv python3 main.py -u r -c f -t l
 ```
 
-If you select option **-u s**, you can also indicate, where to write *stdout*. Example of command:
+If you select option **-u s**, you can also indicate, where to write *stdout*, and the data from when to take the schedule with option DATA, as by parsing finished results (default it is nowaday). Example of command:
 
 ```
-$ python3 main.py -u s > schedule.txt
+$ DATA='2015-06-07' python3 main.py -u s > schedule.txt
 ```
 
-Else it will be showed in your terminal.
+Without indicating where to write *stdout*, it will be showed in your terminal.
