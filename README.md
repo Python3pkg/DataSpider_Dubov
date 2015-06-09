@@ -10,12 +10,12 @@ In utility there are 4 files: *main.py*, *Class_RankSpider.py*, *Class_ResultsSp
 
 By using utility you can select three names of option **-u**: **f** - for finished results, **r** - for ranks, **s** - for schedule.
 
-If you select **f** or **r**, you need to indicate the name of file (in format *csv*) you will save the information to with the option of command line **FILENAME**.
+If you select **f** or **r**, you need to indicate the name of file (in format *csv*) you will save the information to with the option of command line **FILENAME**. Also you can indicate the data, from when you want to get results with the option **DATA**. The data must look like: **"2013-03-02"**.
 
-So for parsing results your command will look like:
+So for parsing results from 7 June 2015, your command will look like:
 
 ```
-$ FILENAME=results.csv python3 main.py -u f
+$ DATA='2015-06-07' FILENAME=results.csv python3 main.py -u f
 ```
 
 If you select option **r**, you also can select two other options **-c**: **m** - for male ranks, **f** - for female ranks, and **-t**: **o** - for official ranks, and **l** - for live ranks.

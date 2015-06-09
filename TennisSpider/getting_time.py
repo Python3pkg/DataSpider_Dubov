@@ -7,13 +7,13 @@ def get_time():
     year = t.tm_year
     month = t.tm_mon
     day = t.tm_mday
-    return (year, month, day)
+    return ((year, month, day))
 
 def make_data(year, month, day):
     '''
     '''
     new_year = str(year)
-    if  t.tm_mday < 10:
+    if  day < 10:
         new_day = '0' + str(day)
     else:
         new_day = str(day)
@@ -61,6 +61,7 @@ def nextday(d, m, y, backi):
             d = 1 if backi == 1 else koldays(12, y)
             m = 1 if backi == 1 else 12
             y = y + 1*backi
+    return d, m, y
 
 def get_data(day, month, year, n):
     '''
@@ -68,6 +69,6 @@ def get_data(day, month, year, n):
     backi = 1 if n > 0 else -1
     i = 0
     while abs(i) < abs(n):
-        nextday(day, month, year, backi)
+        (day, month, year) = nextday(day, month, year, backi)
         i += 1*backi
     return make_data(year, month, day)

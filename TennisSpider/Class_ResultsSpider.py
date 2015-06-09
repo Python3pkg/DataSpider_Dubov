@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+import time
 import grab
 import os
 import csv
@@ -8,20 +9,22 @@ import sys
 import argparse
 from grab.spider import Spider, Task
 
+
+
 class ResultsSpider(Spider):
 	initial_urls = ['http://www.tennislive.net/',]
 	def task_initial(self, grab, task):
 		'''
 		'''
 		self.base_url = self.initial_urls[0]
-		if os.getenv('DATA') != None:
-			data = os.getenv('DATA')
-		else:
-			data=''
-		men_url = ('http://www.tennislive.net/atp-men/{}'.format(data))
+		data = ''
+		if os.getenv('DATA') != None
+			data = os.getenv('DATA')			
+		atp_url = ('http://www.tennislive.net/atp-men/{}'.format(data))
+		wta_url = ('http://www.tennislive.net/wta-women/{}'.format(data))
 		print(men_url)
-		yield Task('atp_tournament_list', url='http://www.tennislive.net/atp-men')
-		yield Task('wta_tournament_list', url='http://www.tennislive.net/wta-women')
+		yield Task('atp_tournament_list', url=atp_url)
+		yield Task('wta_tournament_list', url=wta_url)
 
 
 	def task_atp_tournament_list(self, grab, task):
