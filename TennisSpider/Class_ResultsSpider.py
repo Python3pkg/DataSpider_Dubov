@@ -9,11 +9,17 @@ import argparse
 from grab.spider import Spider, Task
 
 class ResultsSpider(Spider):
-	initial_urls = ['http://www.tennislive.net/', ]
+	initial_urls = ['http://www.tennislive.net/',]
 	def task_initial(self, grab, task):
 		'''
 		'''
 		self.base_url = self.initial_urls[0]
+		if os.getenv('DATA') != None:
+			data = os.getenv('DATA')
+		else:
+			data=''
+		men_url = ('http://www.tennislive.net/atp-men/{}'.format(data))
+		print(men_url)
 		yield Task('atp_tournament_list', url='http://www.tennislive.net/atp-men')
 		yield Task('wta_tournament_list', url='http://www.tennislive.net/wta-women')
 
