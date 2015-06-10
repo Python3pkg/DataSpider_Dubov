@@ -29,6 +29,7 @@ class ResultsSpider(Spider):
 
 	def task_atp_tournament_list(self, grab, task):
 		'''
+		Get the list of atp tournaments.
 		'''
 		civility = "male"
 		xpath = "//div[@class='tour_box']/ul/li[@class='menu_main']/a"
@@ -40,6 +41,7 @@ class ResultsSpider(Spider):
 	
 	def task_wta_tournament_list(self, grab, task):
 		'''
+		Get the list of wta tournaments.
 		'''
 		civility = "female"
 		xpath = "//div[@class='tour_box']/ul/li[@class='menu_main']/a"
@@ -51,6 +53,7 @@ class ResultsSpider(Spider):
 
 	def task_tournament_info(self, grab, task):
 		'''
+		Get the site with all finished mathes in tournament
 		'''
 		xpath ='//ul[@id = "topmenu_full"]/li/a'
 		for elem in grab.doc.select(xpath):
@@ -60,6 +63,7 @@ class ResultsSpider(Spider):
 		
 	def task_get_pairs(self, grab, task):
 		'''
+		Iterate on the list of finished mathes in tournament
 		'''
 		xpath = '//tr[@class="pair" or @class="unpair"]/td[@class!="beg"] | tr[@class="pair" or @class="unpair"]/td[@class="detail"]/div[@class="head2head"]'
 		for elem in grab.doc.select(xpath):
@@ -72,6 +76,7 @@ class ResultsSpider(Spider):
 
 	def task_get_stats(self, grab, task):
 		'''
+		Get all infromation about the finished mathc, including stats and info about players.
 		'''
 		row = []
 		filename = os.getenv('FILENAME')

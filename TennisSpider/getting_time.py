@@ -2,6 +2,7 @@ import time
 
 def get_time():
     '''
+    Returns tuple with the data in format (year, month, day)
     '''
     t = time.localtime(time.time())
     year = t.tm_year
@@ -11,6 +12,7 @@ def get_time():
 
 def make_data(year, month, day):
     '''
+    Make from three parametres year, month, day, data_string in format: "Year-Month_Day". Also, if day or month < 10, added 0 before it.
     '''
     new_year = str(year)
     if  day < 10:
@@ -27,6 +29,7 @@ def make_data(year, month, day):
 #Getting new data
 def is_leap(year):
     '''
+    Check, that year is leap or not.
     '''
     if ((year % 4 == 0) and (year % 100 != 0)) or (year % 400 == 0):
         return True
@@ -35,6 +38,7 @@ def is_leap(year):
 
 def koldays(m, y):
     '''
+    Returns the number of days in month.
     '''
     month_31 = [1, 3, 5, 7, 8, 10, 12]
     month_30 = [4, 6, 9, 11]
@@ -50,6 +54,7 @@ def koldays(m, y):
 
 def nextday(d, m, y, backi):
     '''
+    Returns the next or previous day, depends on argument backi.
     '''
     if (1 <= d + 1*backi) and (d + 1*backi <= koldays(m, y)):
         d = d + 1*backi
@@ -65,6 +70,7 @@ def nextday(d, m, y, backi):
 
 def get_data(day, month, year, n):
     '''
+    Returns the new data.
     '''
     backi = 1 if n > 0 else -1
     i = 0

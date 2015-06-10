@@ -6,6 +6,7 @@ import os
 import csv
 import sys
 import argparse
+import getting_time
 from Class_ResultsSpider import ResultsSpider
 from Class_ScheduleSpider import ScheduleSpider
 from Class_RanksSpider import RanksSpider
@@ -28,6 +29,6 @@ def main():
 		spider = RanksSpider(thread_number=2, args=args)
 		spider.run()
 	else:
-		sys.stderr.write('Unvalid input of utility -u\n')
+		sys.stderr.write('Unvalid input of option -u\n')
 
 main()

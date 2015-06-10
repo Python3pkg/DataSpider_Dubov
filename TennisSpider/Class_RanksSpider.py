@@ -30,10 +30,11 @@ class RanksSpider(Spider):
 			else:
 				sys.stderr.write('Unvalid input of utility -t\n')
 		else:
-			sys.stderr.write('Unvalid input of utility -c\n')
+			sys.stderr.write('Unvalid input of option -c\n')
 
 	def task_get_ranks(self, grab, task):
 		'''
+		Get info about ranks.
 		'''
 		filename = os.getenv('FILENAME')
 		xpath = '//tr/td'

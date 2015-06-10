@@ -22,6 +22,7 @@ class ScheduleSpider(Spider):
 
 	def task_schedule(self, grab, task):
 		'''
+		Go to the site with schedule
 		'''
 		xpath = '//div[@class = "full"]/ul/li/a'
 		for elem in grab.doc.select(xpath):
@@ -32,6 +33,7 @@ class ScheduleSpider(Spider):
 
 	def task_get_pairs(self, grab, task):
 		'''
+		Iterate on all mathes in schedule.
 		'''
 		xpath = '//tr[@class="pair" or @class="unpair"]/td[@class!="beg"] | tr[@class="pair" or @class="unpair"]/td[@class="detail"]/div[@class="head2head"]'
 		for elem in grab.doc.select(xpath):
@@ -42,16 +44,13 @@ class ScheduleSpider(Spider):
 
 	def task_get_info(self, grab, task):
 		'''
+		Get info about match in schedule.
 		'''
 		xpath = '//div[@class="player_matches"]/table/tr/td'
 		i = 0
 		match = []
 		for elem in grab.doc.select(xpath):
-			if i == 0:
-				if elem.text() != '':
-					match.append(str(elem.text()))
-				i += 1
-			elif i == 2:
+			if i < 6:
 				if elem.text() != '':
 					match.append(str(elem.text()))
 				i += 1
@@ -59,11 +58,10 @@ class ScheduleSpider(Spider):
 				if elem.text() != '':
 					match.append(str(elem.text()))
 				break
-			else:
-				if elem.text() != '':
-					match.append(str(elem.text()))
-				i += 1
+		flag = False
 		for elem in match:
 			if elem != 'no matches found':
 				sys.stdout.write(elem + ', ')
-		sys.stdout.write('\n')
+				flag = True
+		if flag:
+			sys.stdout.write('\n')
