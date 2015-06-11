@@ -13,11 +13,11 @@ class ScheduleSpider(Spider):
     def task_initial(self, grab, task):
         '''
         '''
-        data = ''
-        if os.getenv('DATA') != None:
-            data = os.getenv('DATA')
+        date = ''
+        if os.getenv('DATE') != None:
+            date = os.getenv('DATE')
         self.base_url = self.initial_urls[0]
-        task.url = 'http://www.tennislive.net/{}'.format(data)
+        task.url = 'http://www.tennislive.net/{}'.format(date)
         yield Task('schedule', url=task.url)
 
     def task_schedule(self, grab, task):

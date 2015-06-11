@@ -2,7 +2,7 @@ import time
 
 def get_time():
     '''
-    Returns tuple with the data in format (year, month, day)
+    Returns tuple with the date in format (year, month, day)
     '''
     t = time.localtime(time.time())
     year = t.tm_year
@@ -10,9 +10,9 @@ def get_time():
     day = t.tm_mday
     return ((year, month, day))
 
-def make_data(year, month, day):
+def make_date(year, month, day):
     '''
-    Make from three parametres year, month, day, data_string in format: "Year-Month_Day". Also, if day or month < 10, added 0 before it.
+    Make from three parametres year, month, day, date_string in format: "Year-Month_Day". Also, if day or month < 10, added 0 before it.
     '''
     new_year = str(year)
     if  day < 10:
@@ -26,7 +26,7 @@ def make_data(year, month, day):
     string = new_year + '-' + new_month + '-' + new_day  
     return string
 
-#Getting new data
+#Getting new date
 def is_leap(year):
     '''
     Check, that year is leap or not.
@@ -68,13 +68,13 @@ def nextday(d, m, y, backi):
             y = y + 1*backi
     return d, m, y
 
-def get_data(day, month, year, n):
+def get_date(year, month, day, n):
     '''
-    Returns the new data.
+    Returns the new date.
     '''
     backi = 1 if n > 0 else -1
     i = 0
     while abs(i) < abs(n):
         (day, month, year) = nextday(day, month, year, backi)
         i += 1*backi
-    return make_data(year, month, day)
+    return make_date(year, month, day)

@@ -7,6 +7,8 @@ import os
 import csv
 import sys
 import argparse
+import getting_time
+from getting_time import get_time, get_date
 from grab.spider import Spider, Task
 
 
@@ -17,11 +19,16 @@ class ResultsSpider(Spider):
         '''
         '''
         self.base_url = self.initial_urls[0]
-        data = ''
-        if os.getenv('TENNIS_DATA'):
-            data = os.getenv('TENNIS_DATA')
-        atp_url = ('http://www.tennislive.net/atp-men/{}'.format(data))
-        wta_url = ('http://www.tennislive.net/wta-women/{}'.format(data))
+        date = ''
+        n = self.args.n
+        if n:
+            t = get_time()
+            date = get_date(t[0], t[1], t[2], n)
+        else:
+            if os.getenv('TENNIS_DATE'):
+                date = os.getenv('TENNIS_DATE')
+        atp_url = ('http://www.tennislive.net/atp-men/{}'.format(date))
+        wta_url = ('http://www.tennislive.net/wta-women/{}'.format(date))
         yield Task('atp_tournament_list', url=atp_url)
         yield Task('wta_tournament_list', url=wta_url)
 
@@ -47,7 +54,7 @@ class ResultsSpider(Spider):
         for tournament in grab.doc.select(xpath):
             tournament_url = tournament.attr('href')
             tournament_name = tournament.attr('title')
-            if tournament_name ["ATP ranking", "WTA ranking", "ALL TOURNAMENTS"]:
+            if tournament_name in ["ATP ranking", "WTA ranking", "ALL TOURNAMENTS"]:
                 yield Task('tournament_info', tournament_url, tournament_name=tournament_name, civility=civility)   
 
     def task_tournament_info(self, grab, task):
