@@ -17,6 +17,7 @@ So for parsing results from 7 June 2015, your command will look like:
 ```
 $ TENNIS_DATE='2015-06-07' TENNIS_FILENAME=results.csv python3 main.py -u f
 ```
+Or you can indicate option **-n** with an integer number, to get finished results or schedule by the date n days from today.
 
 If you select option **r**, you also can select two other options **-c**: **m** - for male ranks, **f** - for female ranks, and **-t**: **o** - for official ranks, and **l** - for live ranks.
 So for parsing e.g. live female ranks your command will look like:
