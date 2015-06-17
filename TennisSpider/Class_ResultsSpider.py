@@ -8,29 +8,39 @@ import csv
 import sys
 import argparse
 import getting_time
+from parse_score import parse_score, retired_score, who_wins
 from getting_time import get_time, get_date
 from grab.spider import Spider, Task
 
-
-
 class ResultsSpider(Spider):
     initial_urls = ['http://www.tennislive.net/',]
+    date = ''
     def task_initial(self, grab, task):
         '''
         '''
         self.base_url = self.initial_urls[0]
-        date = ''
         n = self.args.n
+        flag = False
+        OK = True
         if n:
-            t = get_time()
-            date = get_date(t[0], t[1], t[2], n)
-        else:
-            if os.getenv('TENNIS_DATE'):
+            if n > 0:
+                sys.stderr.write("Error: option -n must be less then 0\n")
+                OK = False
+            else:
+                t = get_time()
+                date = get_date(t[0], t[1], t[2], n)
+            flag = True
+        if os.getenv('TENNIS_DATE'):
+            if flag:
+                sys.stderr.write("Error: argument TENNIS_DATE and option -n can't be inputed together\n")
+                OK = False
+            else:
                 date = os.getenv('TENNIS_DATE')
-        atp_url = ('http://www.tennislive.net/atp-men/{}'.format(date))
-        wta_url = ('http://www.tennislive.net/wta-women/{}'.format(date))
-        yield Task('atp_tournament_list', url=atp_url)
-        yield Task('wta_tournament_list', url=wta_url)
+        if OK:
+            atp_url = ('http://www.tennislive.net/atp-men/{}'.format(date))
+            wta_url = ('http://www.tennislive.net/wta-women/{}'.format(date))
+            yield Task('atp_tournament_list', url=atp_url)
+            yield Task('wta_tournament_list', url=wta_url)
 
 
     def task_atp_tournament_list(self, grab, task):
@@ -54,18 +64,31 @@ class ResultsSpider(Spider):
         for tournament in grab.doc.select(xpath):
             tournament_url = tournament.attr('href')
             tournament_name = tournament.attr('title')
-            if tournament_name in ["ATP ranking", "WTA ranking", "ALL TOURNAMENTS"]:
+            if tournament_name not in ["ATP ranking", "WTA ranking", "ALL TOURNAMENTS"]:
                 yield Task('tournament_info', tournament_url, tournament_name=tournament_name, civility=civility)   
 
     def task_tournament_info(self, grab, task):
         '''
         Get the site with all finished mathes in tournament
         '''
+        NAME_OF_TOURNAMENT = '-'
+        begins_date = '-'
+        xpath = '//title'
+        for elem in grab.doc.select(xpath):
+            try:
+                title = elem.text().split('/')
+                NAME_OF_TOURNAMENT = title[0]
+                if len(title[1].split('-')) == 3:
+                    begins_date = title[1].split('-')[1]
+            except IndexError:
+                sys.stderr.write("Not enogh info in title\n")
+                print(elem.text())
+
         xpath ='//ul[@id = "topmenu_full"]/li/a'
         for elem in grab.doc.select(xpath):
             if elem.text() == 'Finished':
                 fin_url = elem.attr('href')
-                yield Task('get_pairs', fin_url, civility=task.civility)
+                yield Task('get_pairs', fin_url, civility=task.civility, NAME_OF_TOURNAMENT=NAME_OF_TOURNAMENT, begins_date=begins_date)
         
     def task_get_pairs(self, grab, task):
         '''
@@ -76,7 +99,7 @@ class ResultsSpider(Spider):
             if elem.attr('class') == "head2head":
                 el = elem.select('a')
                 stats_url = el.attr('href')
-                yield Task('get_stats', stats_url, civility=task.civility)
+                yield Task('get_stats', stats_url, civility=task.civility, NAME_OF_TOURNAMENT=task.NAME_OF_TOURNAMENT, begins_date=task.begins_date)
 
 
 
@@ -86,36 +109,73 @@ class ResultsSpider(Spider):
         '''
         NUM_OF_COLUMN = 6
         NUM_OF_COLUMN_IN_STATS_TABLE = 3
-        COLUMN_AFTER_MATCH_INFO = 7
+        COLUMS_FOR_MATCH_STATS = 16
+        COLUMN_AFTER_MATCH_INFO = 18
         COLUMS_FOR_PLAYERS_INFO = 36
-        NAME_PLAYER1 = 3
+        NAME_PLAYER1 = 5
+        NAME_PLAYER2 = 6
         COLUMS_IN_PLAYER_INFO = 9
-        COLUMS_AFTER_STATS = 23
-        COLUMS_AFTER_STATS_AND_PLAYER1 = 32
-        COLUMS_AFTER_STATS_AND_PAIR1 = 41
-        COLUMS_AFTER_STATS_AND_PAIR1_AND_PLAYER3 = 50
+        COLUMS_AFTER_STATS = 34
+        COLUMS_AFTER_STATS_AND_PLAYER1 = 43
+        COLUMS_AFTER_STATS_AND_PAIR1 = 52
+        COLUMS_AFTER_STATS_AND_PAIR1_AND_PLAYER3 = 61
+        NUM_BEFORE_SCORE = 9
+        RES_1 = 7
+        RES_2 = 8
 
         row = []
+        row.append(task.NAME_OF_TOURNAMENT)
+        row.append(task.begins_date)
         
         xpath = '//div[@class="player_matches"]/table/tr/td' #данные о матче - дата, раунд, имена, счет
         
         i = 0
         for elem in grab.doc.select(xpath):
-            if i < NUM_OF_COLUMN and i != 2:
+            if i < NUM_OF_COLUMN and i not in [2, 4]:
                 row.append(str(elem.text()))
                 i += 1
             elif i == 2:
                 row.append(str(task.civility))
                 row.append(str(elem.text()))
                 i += 1
+            elif i == 4:
+                for k in range(12):
+                    row.append('-')
+                string = str(elem.text()) 
+                if 'retired' not in string and 'walk over' not in string:
+                    res = parse_score(string)
+                    print(res)
+                    row[NUM_BEFORE_SCORE : (NUM_BEFORE_SCORE + len(res))] = res[:]
+                    winner = who_wins(res)
+                    if winner:
+                        row[RES_1] = 'W'
+                        row[RES_2] = 'L'
+                    else:
+                        row[RES_2] = 'W'
+                        row[RES_1] = 'L'
+                elif 'walk over' in string:
+                    name = string.split('-')[0].strip()
+                    if name == row[NAME_PLAYER1]:
+                        row[RES_1] = 'walk over'
+                        row[RES_2] = 'W'
+                    elif name == row[NAME_PLAYER2]:
+                        row[RES_1] = 'W'
+                        row[RES_2] = 'walk over'
+                elif 'retired' in string:
+                    res, name = retired_score(string)
+                    row[NUM_BEFORE_SCORE : (NUM_BEFORE_SCORE + len(res))] = res[:]
+                    if name == row[NAME_PLAYER1]:
+                        row[RES_1] = 'retired'
+                        row[RES_2] = 'W'
+                    elif name == row[NAME_PLAYER2]:
+                        row[RES_1] = 'W'
+                        row[RES_2] = 'retired'
+                i += 1
             elif i == NUM_OF_COLUMN:
                 row.append(str(elem.text()))
                 break
 
         xpath = '//table[@class="table_stats_match"]/tr/td'
-
-        for j in range(16):
-                row.append("-")
 
         dic = {'1st SERVE %' : 1,
                 '1st SERVE POINTS WON' : 2,
@@ -126,6 +186,9 @@ class ResultsSpider(Spider):
                 'DOUBLE FAULTS' : 7,
                 'ACES' : 8,
                 }
+
+        for j in range(COLUMS_FOR_MATCH_STATS):
+            row.append("-")
 
         i = 0
         stat = ''
@@ -287,6 +350,27 @@ class ResultsSpider(Spider):
                             num += 1
         
         filename = os.getenv('TENNIS_FILENAME')
-        with open('%s' %filename, 'a') as res:
+        n = self.args.n
+        d =self.args.d
+        flag = False
+        if d:
+            if n:
+                t = get_time()
+                date = get_date(t[0], t[1], t[2], n)
+                flag = True
+            if os.getenv('TENNIS_DATE'):
+                date = os.getenv('TENNIS_DATE')
+                flag = True
+            if not flag:
+                t = get_time()
+                date = make_date(t[0], t[1], t[2])
+                flag = True
+            ndate = date.split('-')
+        if flag:
+            split_name = filename.split('.')
+            f = '{}_{}_{}_{}.{}'.format(split_name[0], ndate[0], ndate[1], ndate[2], split_name[1])
+        else:
+            f = '{}'.format(filename)
+        with open(f, 'a') as res:
             writer = csv.writer(res)
             writer.writerow(row)

@@ -11,12 +11,13 @@ from Class_ResultsSpider import ResultsSpider
 from Class_ScheduleSpider import ScheduleSpider
 from Class_RanksSpider import RanksSpider
 from grab.spider import Spider, Task
-#add option for parcing previous day
+
 parser = argparse.ArgumentParser()
 parser.add_argument("-u", type=str, default='f', help="f - for finished results ,s - for schedule, r - for getting ranks")
 parser.add_argument("-c", type=str, default='m', help="m - for male, f - for female")
 parser.add_argument("-t", type=str, default='l', help="l - for live rating, o - for official")
-parser.add_argument("-n", type=int, default='0', help="input integer number, for getting results or schedule in n days from today")
+parser.add_argument("-d", type=bool, default=0, help="1 - for adding date to filename, 0 - not adding")
+parser.add_argument("-n", type=int, default=0, help="input integer number < 0, for getting results or schedule in n days from today")
 args = parser.parse_args()
 
 def main():
