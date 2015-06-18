@@ -3,7 +3,8 @@
 
 import grab
 import os
-import time
+import getting_time
+from getting_time import get_time, make_date
 import csv
 import sys
 import argparse
@@ -38,6 +39,10 @@ class RanksSpider(Spider):
         '''
         NUM_OF_STRINGS = 5500
         NUM_OF_COLUMN = 11
+
+        t = get_time()
+        date = make_date(t[0], t[1], t[2])
+
         filename = os.getenv('TENNIS_FILENAME')
         xpath = '//tr/td'
         row = []
@@ -54,7 +59,7 @@ class RanksSpider(Spider):
                     if j < NUM_OF_STRINGS:
                         if j % NUM_OF_COLUMN == (NUM_OF_COLUMN-1):
                             row.append(elem.text())
-                            row.append(time.ctime())
+                            row.append(date)
                             writer.writerow(row)
                             row = []
                             j += 1
