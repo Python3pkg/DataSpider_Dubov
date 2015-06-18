@@ -1,4 +1,6 @@
 def parse_score(string):
+    '''
+    '''
     score = string.split(',')
     res = []
     for games in score:
@@ -15,13 +17,19 @@ def parse_score(string):
             res.append(int(e[0]))
             res.append(int(e[1]))
     return res
+
 def retired_score(string):
+    '''
+    '''
     a = string.split('retired')
     score = a[0]
     res = parse_score(score)
     name = a[1].strip()
     return (res, name)
+
 def who_wins(res):
+    '''
+    '''
     num_of_set = len(res) // 2
     count_p1 = 0
     count_p2 = 0
@@ -31,4 +39,3 @@ def who_wins(res):
         else:
             count_p2 += 1
     return count_p1 > count_p2
-

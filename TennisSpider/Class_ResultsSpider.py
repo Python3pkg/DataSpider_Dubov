@@ -144,7 +144,6 @@ class ResultsSpider(Spider):
                 string = str(elem.text()) 
                 if 'retired' not in string and 'walk over' not in string:
                     res = parse_score(string)
-                    print(res)
                     row[NUM_BEFORE_SCORE : (NUM_BEFORE_SCORE + len(res))] = res[:]
                     winner = who_wins(res)
                     if winner:
