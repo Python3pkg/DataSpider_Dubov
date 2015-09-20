@@ -4,10 +4,7 @@ from os.path import join, dirname
 setup(
     name = "TennisSpider",
     version = "0.1",
-    packages = find_packages(),
-    #scripts = ['TennisSpider/main.py'],
-
-    # metadata for upload to PyPI
+    packages = ['mypackage'],
     author = "Dmitry Dubov",
     author_email = "dmitry.s.dubov@gmail.com",
     description = "Package for parsing info about tennis results and stats.",
