@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding: utf-8
 
 import time
@@ -9,15 +8,15 @@ import sys
 import argparse
 import getting_time
 from parse_score import parse_score, retired_score, who_wins
-from getting_time import get_time, get_date
+from getting_time import get_time, get_date, make_date
 from grab.spider import Spider, Task
 
 class ResultsSpider(Spider):
     initial_urls = ['http://www.tennislive.net/',]
-    date = ''
     def task_initial(self, grab, task):
         '''
         '''
+        date = ''
         self.base_url = self.initial_urls[0]
         n = self.args.n
         flag = False
@@ -36,11 +35,12 @@ class ResultsSpider(Spider):
                 OK = False
             else:
                 date = os.getenv('TENNIS_DATE')
+                OK = True
         if OK:
             atp_url = ('http://www.tennislive.net/atp-men/{}'.format(date))
             wta_url = ('http://www.tennislive.net/wta-women/{}'.format(date))
-            yield Task('atp_tournament_list', url=atp_url)
-            yield Task('wta_tournament_list', url=wta_url)
+            yield Task('atp_tournament_list', url=atp_url, date=date)
+            yield Task('wta_tournament_list', url=wta_url, date=date)
 
 
     def task_atp_tournament_list(self, grab, task):
@@ -53,7 +53,7 @@ class ResultsSpider(Spider):
             tournament_url = tournament.attr('href')
             tournament_name = tournament.attr('title')
             if tournament_name not in ["ATP ranking", "WTA ranking", "ALL TOURNAMENTS"]:
-                yield Task('tournament_info', tournament_url, tournament_name=tournament_name, civility=civility)   
+                yield Task('tournament_info', tournament_url, tournament_name=tournament_name, civility=civility, date=task.date)   
     
     def task_wta_tournament_list(self, grab, task):
         '''
@@ -65,7 +65,7 @@ class ResultsSpider(Spider):
             tournament_url = tournament.attr('href')
             tournament_name = tournament.attr('title')
             if tournament_name not in ["ATP ranking", "WTA ranking", "ALL TOURNAMENTS"]:
-                yield Task('tournament_info', tournament_url, tournament_name=tournament_name, civility=civility)   
+                yield Task('tournament_info', tournament_url, tournament_name=tournament_name, civility=civility, date=task.date)   
 
     def task_tournament_info(self, grab, task):
         '''
@@ -88,7 +88,7 @@ class ResultsSpider(Spider):
         for elem in grab.doc.select(xpath):
             if elem.text() == 'Finished':
                 fin_url = elem.attr('href')
-                yield Task('get_pairs', fin_url, civility=task.civility, NAME_OF_TOURNAMENT=NAME_OF_TOURNAMENT, begins_date=begins_date)
+                yield Task('get_pairs', fin_url, civility=task.civility, NAME_OF_TOURNAMENT=NAME_OF_TOURNAMENT, begins_date=begins_date, date=task.date)
         
     def task_get_pairs(self, grab, task):
         '''
@@ -99,7 +99,7 @@ class ResultsSpider(Spider):
             if elem.attr('class') == "head2head":
                 el = elem.select('a')
                 stats_url = el.attr('href')
-                yield Task('get_stats', stats_url, civility=task.civility, NAME_OF_TOURNAMENT=task.NAME_OF_TOURNAMENT, begins_date=task.begins_date)
+                yield Task('get_stats', stats_url, civility=task.civility, NAME_OF_TOURNAMENT=task.NAME_OF_TOURNAMENT, begins_date=task.begins_date, date=task.date)
 
 
 
@@ -350,22 +350,12 @@ class ResultsSpider(Spider):
         
         filename = os.getenv('TENNIS_FILENAME')
         n = self.args.n
-        d =self.args.d
-        flag = False
+        d = self.args.d
         if d:
-            if n:
+            if not task.date:
                 t = get_time()
-                date = get_date(t[0], t[1], t[2], n)
-                flag = True
-            if os.getenv('TENNIS_DATE'):
-                date = os.getenv('TENNIS_DATE')
-                flag = True
-            if not flag:
-                t = get_time()
-                date = make_date(t[0], t[1], t[2])
-                flag = True
-            ndate = date.split('-')
-        if flag:
+                task.date = make_date(t[0], t[1], t[2])
+            ndate = task.date.split('-')
             split_name = filename.split('.')
             f = '{}_{}_{}_{}.{}'.format(split_name[0], ndate[0], ndate[1], ndate[2], split_name[1])
         else:
