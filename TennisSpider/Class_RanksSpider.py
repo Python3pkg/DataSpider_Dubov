@@ -2,8 +2,8 @@
 
 import grab
 import os
-import getting_time
-from getting_time import get_time, make_date
+import TennisSpider.getting_time
+from TennisSpider.getting_time import get_time, make_date
 import csv
 import sys
 import argparse

@@ -6,10 +6,10 @@ import os
 import csv
 import sys
 import argparse
-import getting_time
-from Class_ResultsSpider import ResultsSpider
-from Class_ScheduleSpider import ScheduleSpider
-from Class_RanksSpider import RanksSpider
+import TennisSpider.getting_time
+from TennisSpider.Class_ResultsSpider import ResultsSpider
+from TennisSpider.Class_ScheduleSpider import ScheduleSpider
+from TennisSpider.Class_RanksSpider import RanksSpider
 from grab.spider import Spider, Task
 
 parser = argparse.ArgumentParser()

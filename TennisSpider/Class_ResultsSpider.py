@@ -6,9 +6,9 @@ import os
 import csv
 import sys
 import argparse
-import getting_time
-from parse_score import parse_score, retired_score, who_wins
-from getting_time import get_time, get_date, make_date
+import TennisSpider.getting_time
+from TennisSpider.parse_score import parse_score, retired_score, who_wins
+from TennisSpider.getting_time import get_time, get_date, make_date
 from grab.spider import Spider, Task
 
 class ResultsSpider(Spider):
