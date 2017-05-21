@@ -82,7 +82,7 @@ class ResultsSpider(Spider):
                     begins_date = title[1].split('-')[1]
             except IndexError:
                 sys.stderr.write("Not enogh info in title\n")
-                print(elem.text())
+                print((elem.text()))
 
         xpath ='//ul[@id = "topmenu_full"]/li/a'
         for elem in grab.doc.select(xpath):
